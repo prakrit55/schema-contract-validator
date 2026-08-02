@@ -57,7 +57,7 @@ jobs:
 
       - name: OpenTofu Init & Validate
         run: |
-          cd bigquerydataset
+          cd bigqueryiaac
           tofu init -backend=false
           tofu validate
 
