@@ -1,0 +1,8 @@
+# ==============================================================================
+# Author: Prakriti Mandal
+# Contact: prakritimandal611@gmail.com
+# ==============================================================================
+django
+djangorestframework
+google-cloud-storage
+google-cloud-bigquery

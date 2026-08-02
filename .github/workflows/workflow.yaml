@@ -72,7 +72,7 @@ jobs:
 
       - name: Install Data Loader Dependencies
         run: |
-          pip install google-cloud-storage google-cloud-bigquery django djangorestframework
+          pip install -r requirements.txt
 
       - name: Validate Student Dataset Schema
         run: |
