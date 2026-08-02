@@ -70,6 +70,12 @@ jobs:
       - name: Set up Google Cloud Platform Software Development Kit
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: OpenTofu Apply
+        run: |
+          cd bigquerydataset
+          tofu init
+          tofu apply -auto-approve
+
       - name: Install Data Loader Dependencies
         run: |
           pip install -r requirements.txt
