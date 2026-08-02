@@ -1,0 +1,18 @@
+[
+  {
+    "student_id": "Student101",
+    "name": "Alice Smith",
+    "age": 20,
+    "email": "alice.smith@example.com",
+    "grade": "A",
+    "courses": ["Mathematics", "Physics"]
+  },
+  {
+    "student_id": "Student1002",
+    "name": "Alexander",
+    "age": 4,
+    "email": "alexander@domain",
+    "grade": "E",
+    "courses": []
+  }
+]
