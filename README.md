@@ -26,6 +26,9 @@ The system enforces a **"Fail-Closed"** model: any security vulnerabilities (lea
 │   └── outputs.tf              # Target resource outputs
 ├── datasets/
 │   └── student_onboarding_staged.json  # Raw student onboarding dataset (JSON Array format)
+├── diagrams/
+│   ├── pipeline_architecture.png       # Pipeline architecture diagram image
+│   └── bigquery_schema.png             # BigQuery console table schema screenshot
 ├── validatordcyn/
 │   ├── serialiser.py           # Django/DRF schema verification script (DCYN library)
 │   └── convert_ndjson.py       # JSON-to-NDJSON formatting script
@@ -103,6 +106,55 @@ This script deconstructs the onboarding JSON payload and validates fields agains
 BigQuery expects newline-delimited JSON objects (NDJSON) rather than standard JSON arrays. 
 *   **Purpose:** Strips array brackets `[ ]` and separating commas `,` between JSON records.
 *   **Encoding Safeness:** Ensures the file is encoded in **UTF-8 without a BOM**, bypassing standard PowerShell redirector (`>`) bugs that generate invalid UTF-16 characters.
+
+---
+
+## 📊 Google BigQuery Schema Contract
+The data ingestion pipeline maps directly to the Google BigQuery table schema in the staging environment. 
+
+Below is the verified schema for the `student_onboarding_staged` table in project `k8s-staging-252732` (dataset `d1_staged_enforced_prod`), which aligns exactly with our Django REST Framework model serializer contract:
+
+![BigQuery Table Schema](diagrams/bigquery_schema.png)
+
+
+---
+
+## 🔐 Keyless Authentication Setup (Workload Identity Federation)
+To run the GitHub Actions workflow without static private keys, configure GCP Workload Identity Federation:
+
+### 1. Create the Service Account
+```powershell
+gcloud iam service-accounts create github-actions-deployer --display-name="GitHub Actions Deployer" --project=k8s-staging-252732
+```
+
+### 2. Create the Workload Identity Pool
+```powershell
+gcloud iam workload-identity-pools create "github-deployer" --project="k8s-staging-252732" --location="global" --display-name="GitHub Actions Pool"
+```
+
+### 3. Create the OIDC Workload Identity Provider
+```powershell
+gcloud iam workload-identity-pools providers create-oidc "github-prakrit55-v2" --project="k8s-staging-252732" --location="global" --workload-identity-pool="github-deployer" --display-name="github-prakrit55-v2" --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" --attribute-condition="assertion.repository == 'prakrit55/schema-contract-validator'" --issuer-uri="https://token.actions.githubusercontent.com"
+```
+
+### 4. Authorize Repository Impersonation (Workload Identity User)
+Allow the GitHub repository `prakrit55/schema-contract-validator` to impersonate the service account:
+```powershell
+gcloud iam service-accounts add-iam-policy-binding "github-actions-deployer@k8s-staging-252732.iam.gserviceaccount.com" --project="k8s-staging-252732" --role="roles/iam.workloadIdentityUser" --member="principalSet://iam.googleapis.com/projects/898698082979/locations/global/workloadIdentityPools/github-deployer/attribute.repository/prakrit55/schema-contract-validator"
+```
+
+### 5. Grant Minimum Required Roles to Service Account
+Grant permissions to allow the pipeline runner to upload files to GCS and execute BigQuery loading jobs:
+```powershell
+# Grant GCS Object Admin
+gcloud projects add-iam-policy-binding k8s-staging-252732 --member="serviceAccount:github-actions-deployer@k8s-staging-252732.iam.gserviceaccount.com" --role="roles/storage.objectAdmin"
+
+# Grant BigQuery Job User
+gcloud projects add-iam-policy-binding k8s-staging-252732 --member="serviceAccount:github-actions-deployer@k8s-staging-252732.iam.gserviceaccount.com" --role="roles/bigquery.jobUser"
+
+# Grant BigQuery Data Editor
+gcloud projects add-iam-policy-binding k8s-staging-252732 --member="serviceAccount:github-actions-deployer@k8s-staging-252732.iam.gserviceaccount.com" --role="roles/bigquery.dataEditor"
+```
 
 ---
 
