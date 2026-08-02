@@ -28,7 +28,8 @@ The system enforces a **"Fail-Closed"** model: any security vulnerabilities (lea
 │   └── student_onboarding_staged.json  # Raw student onboarding dataset (JSON Array format)
 ├── diagrams/
 │   ├── pipeline_architecture.png       # Pipeline architecture diagram image
-│   └── bigquery_schema.png             # BigQuery console table schema screenshot
+│   ├── bigquery_schema.png             # BigQuery console table schema screenshot
+│   └── bigquery_data_results.png       # BigQuery query results screenshot
 ├── validatordcyn/
 │   ├── serialiser.py           # Django/DRF schema verification script (DCYN library)
 │   └── convert_ndjson.py       # JSON-to-NDJSON formatting script
@@ -109,12 +110,18 @@ BigQuery expects newline-delimited JSON objects (NDJSON) rather than standard JS
 
 ---
 
-## 📊 Google BigQuery Schema Contract
-The data ingestion pipeline maps directly to the Google BigQuery table schema in the staging environment. 
+## 📊 Google BigQuery Schema & Query Results
+The data ingestion pipeline maps directly to the Google BigQuery table schema in the staging environment.
 
+### A. Table Schema Contract
 Below is the verified schema for the `student_onboarding_staged` table in project `k8s-staging-252732` (dataset `d1_staged_enforced_prod`), which aligns exactly with our Django REST Framework model serializer contract:
 
 ![BigQuery Table Schema](diagrams/bigquery_schema.png)
+
+### B. Ingested Data Query Results
+Once data is successfully loaded through the pipeline, you can query the records directly in the GCP BigQuery Console. Below is a query run showing the successfully ingested student rows:
+
+![BigQuery Query Results](diagrams/bigquery_data_results.png)
 
 
 ---

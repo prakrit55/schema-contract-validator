@@ -136,7 +136,8 @@ resource "google_bigquery_row_access_policy" "student_rls_policy" {
   filter_predicate = "age >= 18 OR session_user() = '${local.teacher_onboarding_sa}'"
 
   grantees = [
-    "serviceAccount:${local.teacher_onboarding_sa}"
+    "serviceAccount:${local.teacher_onboarding_sa}",
+    "user:prakritidev881@gmail.com"
   ]
 }
 
