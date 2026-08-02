@@ -27,7 +27,7 @@ resource "google_storage_bucket" "raw_landing" {
   }
 
   uniform_bucket_level_access = true
-  public_access_prevention = "enforced"
+  public_access_prevention    = "enforced"
 
   encryption {
     default_kms_key_name = "" # Set KMS key path if Customer Managed Encryption Key is desired
@@ -129,12 +129,12 @@ resource "google_bigquery_table" "student_onboarding_staged" {
 }
 
 resource "google_bigquery_row_access_policy" "student_rls_policy" {
-  dataset_id      = google_bigquery_dataset.staged_enforced.dataset_id
-  table_id        = google_bigquery_table.student_onboarding_staged.table_id
-  policy_id       = "rls_restrict_underage_and_unauthorized"
-  
+  dataset_id = google_bigquery_dataset.staged_enforced.dataset_id
+  table_id   = google_bigquery_table.student_onboarding_staged.table_id
+  policy_id  = "rls_restrict_underage_and_unauthorized"
+
   filter_predicate = "age >= 18 OR session_user() = '${local.teacher_onboarding_sa}'"
-  
+
   grantees = [
     "serviceAccount:${local.teacher_onboarding_sa}"
   ]
